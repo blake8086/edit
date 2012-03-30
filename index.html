@@ -21,8 +21,8 @@
 				editor.getSession().setMode(new HTMLMode());
 
 				var filename = window.prompt('Paste filename of file to edit:');
-				console.log(filename);
-				document.title = filename;
+				window.location.hash = filename;
+                document.title = filename.replace(/^.+\//, '');
 				
 				var commandPressed = false;
 				
