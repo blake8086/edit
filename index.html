@@ -71,6 +71,10 @@
 					}, function(data, status, xhr) {});
                     document.title = filename.replace(/^.+\//, '');
 				}
+                
+                window.onbeforeunload = function() {
+                    return '';
+                };
 			});
 		</script>
 	</head>
