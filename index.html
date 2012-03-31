@@ -51,16 +51,18 @@
                     }
 				});
 
-    			var commandPressed = false;
-				
-				$(document).keydown(function(e) {
-					if (commandPressed && e.keyCode == 83) {
-						e.preventDefault();
-						console.log('saving...');
-						save();
-					}
-					commandPressed = (e.keyCode == 91);
-				});
+                editor.commands.addCommand({
+                    name: 'save',
+                    bindKey: {
+                        win: 'Ctrl-S',
+                        mac: 'Command-S',
+                        sender: 'editor'
+                    },
+                    exec: function(env, args, request) {
+                        console.log('saving...');
+    					save();
+                    }
+                });
 				
 				function save() {
 					$.post('/save', {
