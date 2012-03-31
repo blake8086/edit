@@ -33,7 +33,7 @@ http.createServer(function(request, response) {
 								response.end();
 							}
 						});
-					}
+					};
 					sendChunk();
 				} else {
 					console.log(err);

@@ -13,12 +13,11 @@
 		<script src="json2.js"></script>
 	    <script src="ace/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
 		<script src="ace/build/src/mode-html.js" type="text/javascript" charset="utf-8"></script>
+        <script src="ace/build/src/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
 
 		<script>
 			$(function() {
 		        var editor = ace.edit("editor");
-				var HTMLMode = require("ace/mode/html").Mode;
-				editor.getSession().setMode(new HTMLMode());
 
                 var hash = window.location.hash;
                 if (hash) {
@@ -31,6 +30,15 @@
 				
 				$.get('/file?path=' + filename, function(data) {
 					editor.getSession().setValue(data);
+                    var extension = filename.replace(/^.+\./, '');
+        			var extensions = {
+                        'html': 'ace/mode/html',
+                        'js': 'ace/mode/javascript',
+        			};
+                    if (extensions[extension]) {
+					    var mode = require(extensions[extension]).Mode;
+					    editor.getSession().setMode(new mode());
+                    }
 				});
 
     			var commandPressed = false;
