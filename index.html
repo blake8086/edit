@@ -20,16 +20,21 @@
 				var HTMLMode = require("ace/mode/html").Mode;
 				editor.getSession().setMode(new HTMLMode());
 
-				var filename = window.prompt('Paste filename of file to edit:');
+                var hash = window.location.hash;
+                if (hash) {
+                    filename = hash.replace(/^#/, '');
+                } else {
+        			filename = window.prompt('Paste filename of file to edit:');
+                }
 				window.location.hash = filename;
                 document.title = filename.replace(/^.+\//, '');
-				
-				var commandPressed = false;
 				
 				$.get('/file?path=' + filename, function(data) {
 					editor.getSession().setValue(data);
 				});
 
+    			var commandPressed = false;
+				
 				$(document).keydown(function(e) {
 					if (commandPressed && e.keyCode == 83) {
 						e.preventDefault();
