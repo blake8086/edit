@@ -18,6 +18,9 @@
 		<script>
 			$(function() {
 		        var editor = ace.edit("editor");
+                editor.setShowPrintMargin(false);
+                
+                var saved = true;
 
                 var hash = window.location.hash;
                 if (hash) {
@@ -30,6 +33,13 @@
 				
 				$.get('/file?path=' + filename, function(data) {
 					editor.getSession().setValue(data);
+                    
+                    editor.getSession().on('change', function(e) {
+                        console.log(e.data);
+                        saved = false;
+                        document.title = '*' + filename.replace(/^.+\//, '');
+                    });
+                    
                     var extension = filename.replace(/^.+\./, '');
         			var extensions = {
                         'html': 'ace/mode/html',
@@ -57,6 +67,7 @@
 						fileName: encodeURIComponent(filename),
 						fileContents: editor.getSession().getValue(),
 					}, function(data, status, xhr) {});
+                    document.title = filename.replace(/^.+\//, '');
 				}
 			});
 		</script>
