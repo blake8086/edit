@@ -68,7 +68,9 @@
 					$.post('/save', {
 						fileName: encodeURIComponent(filename),
 						fileContents: editor.getSession().getValue(),
-					}, function(data, status, xhr) {});
+					}, function(data, status, xhr) {
+    				    console.log('saved?');
+					});
                     document.title = filename.replace(/^.+\//, '');
 				}
                 

@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 var fs = require('fs');
 var http = require('http');
 var querystring = require('querystring');
@@ -16,8 +14,8 @@ http.createServer(function(request, response) {
 				response.end();
 			});
 			break;
+		//returns a file's entire contents
 		case 'file':
-			//returns a file's entire contents
 			var filePath = querystring.parse(parsedUrl.query).path;
 			fs.open(filePath, 'r', 0666, function(err, fd) {
 				if (!err) {
@@ -40,6 +38,104 @@ http.createServer(function(request, response) {
 				}
 			});
 			break;
+        /*
+        //nothing is using this now, but it's a holdover from a different project
+		//returns a full listing for a directory
+        case 'dir':
+			var filePath = querystring.parse(parsedUrl.query).path;
+			fs.readdir(filePath, function(err, files) {
+				if (!err) {
+					var serialize = function(filename) {
+						var files = {
+							directory : filePath,
+							files : fileObjects,
+						};
+						response.writeHead(200, {'Content-Type': 'application/json'});
+						response.write(JSON.stringify(files));
+						response.end();
+					}
+					var fileObjects = [];
+					var filesProcessed = 0;
+					for (var i = 0; i < files.length; i++) {
+						var name = files[i];
+						var fullName = require('path').join(filePath, files[i]);
+						fs.stat(fullName, (function(i, name, fullName) {
+							return function(err, stats) {
+								statHash = {};
+								for (stat in stats) {
+									var value = (typeof stats[stat] === 'function') ? stats[stat]() : stats[stat];
+									statHash[stat] = value;
+								}
+								statHash.name = name;
+								statHash.fullName = fullName;
+								fileObjects[i] = statHash;
+								filesProcessed++;
+								if (filesProcessed >= files.length) {
+									serialize();
+								}
+							}
+						})(i, name, fullName));
+					}
+				} else {
+					console.log(err);
+				}
+			});
+			break;
+        */
+        //lists the complete recursive contents of a directory
+        case 'list':
+            var filePath = querystring.parse(parsedUrl.query).path;
+            var filesRemaining = {};
+            var fileObjects = {};
+            
+            var getDirectoryListing = function(path) {
+                filesRemaining[path] = 0;
+                //read all the files
+                fs.readdir(path, function(err, files) {
+                    if (!err) {
+                        for (var i = 0; i < files.length; i++) {
+                            var name = files[i];
+                            var fullName = require('path').join(filePath, files[i]);
+                            getFileStats(fullName);
+                        }
+                        delete filesRemaining[path];
+                    } else {
+                        console.log(err);
+                    }
+                });
+            };
+            
+            var getFileStats = function(path) {
+                //put this file in files remaining
+                filesRemaining[path] = 0;
+                //read stats, place in file objects
+				fs.stat(path, function(err, stats) {
+					statHash = {};
+                    for (stat in stats) {
+						var value = (typeof stats[stat] === 'function') ? stats[stat]() : stats[stat];
+						statHash[stat] = value;
+					}
+                    if (statHash.isDirectory) {
+                        getDirectoryListing(statHash.fullName);
+                    }
+					fileObjects[statHash.fullName] = statHash;
+                    delete filesRemaining[statHash.fullName];
+                    
+                    if (filesRemaining.length == 0) {
+                        serialize();
+                    }
+                });
+            };
+
+            var serialize = function() {
+				response.writeHead(200, {'Content-Type': 'application/json'});
+				response.write(JSON.stringify(fileObjects));
+				response.end();
+			};
+            
+            getDirectoryListing(filePath);
+
+            break;
 		case 'favicon.ico':
 			break;
 		case 'save':
