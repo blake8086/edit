@@ -81,6 +81,90 @@
 		</script>
 	</head>
 	<body>
+        <!-- quick open is all one glob for moving elsewhere later -->
+        <style>
+            .quick-open {
+                left: 100px;
+                line-height: 1.25em;
+                position: absolute;
+                top: 0;
+                z-index: 1;
+            }
+            ul.typeahead.dropdown-menu {
+                background: #fff;
+                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Droid Sans Mono', 'Consolas', monospace;
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                position: absolute;
+                top: 20px;
+                z-index: 2;
+            }
+            ul.typeahead.dropdown-menu li p {
+                margin: 0;
+            }
+            ul.typeahead.dropdown-menu li.active {
+                background-color: #ddd;
+            }
+        </style>
+        <div class="quick-open">
+            <input type="text">
+            <div class="results"></div>
+        </div>
+        <script src="bootstrap-typeahead.js"></script>
+        <script>
+            $.getJSON('/list?path=/Users/blake8086/Dropbox/edit', function(data) {
+                var files = data.files;
+                $('.quick-open input').typeahead({
+                    source: files,
+                    items: 10,
+                    matcher: function(item) {
+                        var itemArray = item.split('');
+                        var queryArray = this.query.split('');
+                        while (itemArray.length > 0) {
+                            var itemCharacter = itemArray.shift();
+                            if (queryArray[0] == itemCharacter) {
+                                queryArray.shift();
+                                if (queryArray.length == 0) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    },
+                    sorter: function(items) {
+                        //this.query
+                        return items;
+                    },
+                    highlighter: function(item) {
+                        var itemArray = item.split('');
+                        var queryArray = this.query.split('');
+                        var result = '';
+                        while (itemArray.length > 0) {
+                            var itemCharacter = itemArray.shift();
+                            if (queryArray[0] == itemCharacter) {
+                                result += '<b>' + queryArray[0] + '</b>';
+                                queryArray.shift();
+                                if (queryArray.length == 0) {
+                                    result += itemArray.join('');
+                                    break;
+                                }
+                            } else {
+                                result += itemCharacter;
+                            }
+                        }
+                        return '<p>' + result + '</p>';
+                    }
+                }).change(function(e) {
+                    var filename = $(this).val();
+                    if (files.indexOf(filename) != -1) {
+                        window.open('/#' + filename);
+                    }
+                });
+            });
+        </script>
+        <!-- end of quick open glob -->
+        
 		<div id="editor"></div>
 	</body>
 </html>
