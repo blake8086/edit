@@ -19,7 +19,9 @@
 			$(function() {
 		        var editor = ace.edit("editor");
                 editor.setShowPrintMargin(false);
-                
+                editor.getSession().setTabSize(2);
+                editor.getSession().setUseSoftTabs(true);
+
                 var saved = true;
 
                 var hash = window.location.hash;
