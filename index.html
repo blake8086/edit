@@ -4,168 +4,168 @@
 		<style>
 			body { margin: 0; padding: 0; }
 			#editor {
-		        position: absolute;
-		        width: 100%;
-		        height: 100%;
-		    }
+		    position: absolute;
+		    width: 100%;
+		    height: 100%;
+		  }
 		</style>
 		<script src="jquery.min.js"></script>
 		<script src="json2.js"></script>
-	    <script src="ace/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="ace/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
 		<script src="ace/build/src/mode-html.js" type="text/javascript" charset="utf-8"></script>
-        <script src="ace/build/src/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
+    <script src="ace/build/src/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
 
 		<script>
 			$(function() {
-		        var editor = ace.edit("editor");
-                editor.setShowPrintMargin(false);
-                editor.getSession().setTabSize(2);
-                editor.getSession().setUseSoftTabs(true);
+		    var editor = ace.edit("editor");
+        editor.setShowPrintMargin(false);
+        editor.getSession().setTabSize(2);
+        editor.getSession().setUseSoftTabs(true);
 
-                var saved = true;
+        var saved = true;
 
-                var hash = window.location.hash;
-                if (hash) {
-                    filename = hash.replace(/^#/, '');
-                } else {
-        			filename = window.prompt('Paste filename of file to edit:');
-                }
+        var hash = window.location.hash;
+        if (hash) {
+          filename = hash.replace(/^#/, '');
+        } else {
+        	filename = window.prompt('Paste filename of file to edit:');
+        }
 				window.location.hash = filename;
-                document.title = filename.replace(/^.+\//, '');
+        document.title = filename.replace(/^.+\//, '');
 				
 				$.get('/file?path=' + filename, function(data) {
 					editor.getSession().setValue(data);
-                    
-                    editor.getSession().on('change', function(e) {
-                        console.log(e.data);
-                        saved = false;
-                        document.title = '*' + filename.replace(/^.+\//, '');
-                    });
-                    
-                    var extension = filename.replace(/^.+\./, '');
-        			var extensions = {
-                        'html': 'ace/mode/html',
-                        'js': 'ace/mode/javascript',
-        			};
-                    if (extensions[extension]) {
-					    var mode = require(extensions[extension]).Mode;
-					    editor.getSession().setMode(new mode());
-                    }
-				});
 
-                editor.commands.addCommand({
-                    name: 'save',
-                    bindKey: {
-                        win: 'Ctrl-S',
-                        mac: 'Command-S',
-                        sender: 'editor'
-                    },
-                    exec: function(env, args, request) {
-                        console.log('saving...');
-    					save();
-                    }
-                });
+          editor.getSession().on('change', function(e) {
+            console.log(e.data);
+            saved = false;
+            document.title = '*' + filename.replace(/^.+\//, '');
+          });
+                    
+          var extension = filename.replace(/^.+\./, '');
+    			var extensions = {
+            'html': 'ace/mode/html',
+            'js': 'ace/mode/javascript',
+    			};
+          if (extensions[extension]) {
+  			    var mode = require(extensions[extension]).Mode;
+				    editor.getSession().setMode(new mode());
+          }
+        });
+
+        editor.commands.addCommand({
+          name: 'save',
+          bindKey: {
+            win: 'Ctrl-S',
+            mac: 'Command-S',
+            sender: 'editor'
+          },
+          exec: function(env, args, request) {
+            console.log('saving...');
+            save();
+          }
+        });
 				
 				function save() {
 					$.post('/save', {
 						fileName: encodeURIComponent(filename),
 						fileContents: editor.getSession().getValue(),
 					}, function(data, status, xhr) {
-    				    console.log('saved?');
+				    console.log('saved?');
 					});
-                    document.title = filename.replace(/^.+\//, '');
+          document.title = filename.replace(/^.+\//, '');
 				}
                 
-                window.onbeforeunload = function() {
-                    return '';
-                };
+        window.onbeforeunload = function() {
+          return '';
+        };
 			});
 		</script>
 	</head>
 	<body>
-        <!-- quick open is all one glob for moving elsewhere later -->
-        <style>
-            .quick-open {
-                left: 100px;
-                line-height: 1.25em;
-                position: absolute;
-                top: 0;
-                z-index: 1;
+    <!-- quick open is all one glob for moving elsewhere later -->
+    <style>
+      .quick-open {
+        left: 100px;
+        line-height: 1.25em;
+        position: absolute;
+        top: 0;
+        z-index: 1;
+      }
+      ul.typeahead.dropdown-menu {
+        background: #fff;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Droid Sans Mono', 'Consolas', monospace;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        top: 20px;
+        z-index: 2;
+      }
+      ul.typeahead.dropdown-menu li p {
+        margin: 0;
+      }
+      ul.typeahead.dropdown-menu li.active {
+        background-color: #ddd;
+      }
+    </style>
+    <div class="quick-open">
+      <input type="text">
+      <div class="results"></div>
+    </div>
+    <script src="bootstrap-typeahead.js"></script>
+    <script>
+      $.getJSON('/list?path=/Users/blake8086/Dropbox/edit', function(data) {
+        var files = data.files;
+        $('.quick-open input').typeahead({
+          source: files,
+          items: 10,
+          matcher: function(item) {
+            var itemArray = item.split('');
+            var queryArray = this.query.split('');
+            while (itemArray.length > 0) {
+              var itemCharacter = itemArray.shift();
+              if (queryArray[0] == itemCharacter) {
+                queryArray.shift();
+                if (queryArray.length == 0) {
+                  return true;
+                }
+              }
             }
-            ul.typeahead.dropdown-menu {
-                background: #fff;
-                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Droid Sans Mono', 'Consolas', monospace;
-                list-style-type: none;
-                margin: 0;
-                padding: 0;
-                position: absolute;
-                top: 20px;
-                z-index: 2;
+            return false;
+          },
+          sorter: function(items) {
+            //this.query
+            return items;
+          },
+          highlighter: function(item) {
+            var itemArray = item.split('');
+            var queryArray = this.query.split('');
+            var result = '';
+            while (itemArray.length > 0) {
+              var itemCharacter = itemArray.shift();
+              if (queryArray[0] == itemCharacter) {
+                result += '<b>' + queryArray[0] + '</b>';
+                queryArray.shift();
+                if (queryArray.length == 0) {
+                  result += itemArray.join('');
+                  break;
+                }
+              } else {
+                result += itemCharacter;
+              }
             }
-            ul.typeahead.dropdown-menu li p {
-                margin: 0;
-            }
-            ul.typeahead.dropdown-menu li.active {
-                background-color: #ddd;
-            }
-        </style>
-        <div class="quick-open">
-            <input type="text">
-            <div class="results"></div>
-        </div>
-        <script src="bootstrap-typeahead.js"></script>
-        <script>
-            $.getJSON('/list?path=/Users/blake8086/Dropbox/edit', function(data) {
-                var files = data.files;
-                $('.quick-open input').typeahead({
-                    source: files,
-                    items: 10,
-                    matcher: function(item) {
-                        var itemArray = item.split('');
-                        var queryArray = this.query.split('');
-                        while (itemArray.length > 0) {
-                            var itemCharacter = itemArray.shift();
-                            if (queryArray[0] == itemCharacter) {
-                                queryArray.shift();
-                                if (queryArray.length == 0) {
-                                    return true;
-                                }
-                            }
-                        }
-                        return false;
-                    },
-                    sorter: function(items) {
-                        //this.query
-                        return items;
-                    },
-                    highlighter: function(item) {
-                        var itemArray = item.split('');
-                        var queryArray = this.query.split('');
-                        var result = '';
-                        while (itemArray.length > 0) {
-                            var itemCharacter = itemArray.shift();
-                            if (queryArray[0] == itemCharacter) {
-                                result += '<b>' + queryArray[0] + '</b>';
-                                queryArray.shift();
-                                if (queryArray.length == 0) {
-                                    result += itemArray.join('');
-                                    break;
-                                }
-                            } else {
-                                result += itemCharacter;
-                            }
-                        }
-                        return '<p>' + result + '</p>';
-                    }
-                }).change(function(e) {
-                    var filename = $(this).val();
-                    if (files.indexOf(filename) != -1) {
-                        window.open('/#' + filename);
-                    }
-                });
-            });
-        </script>
-        <!-- end of quick open glob -->
+            return '<p>' + result + '</p>';
+          }
+        }).change(function(e) {
+          var filename = $(this).val();
+          if (files.indexOf(filename) != -1) {
+              window.open('/#' + filename);
+          }
+        });
+      });
+    </script>
+    <!-- end of quick open glob -->
         
 		<div id="editor"></div>
 	</body>
