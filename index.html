@@ -21,7 +21,7 @@
         editor.setShowPrintMargin(false);
         editor.getSession().setTabSize(2);
         editor.getSession().setUseSoftTabs(true);
-
+                  
         var saved = true;
 
         var hash = window.location.hash;
@@ -65,11 +65,12 @@
             save();
           }
         });
-				
+
 				function save() {
+          var fileContents = editor.getSession().getValue();
 					$.post('/save', {
 						fileName: encodeURIComponent(filename),
-						fileContents: editor.getSession().getValue(),
+						fileContents: fileContents,
 					}, function(data, status, xhr) {
 				    console.log('saved?');
 					});
