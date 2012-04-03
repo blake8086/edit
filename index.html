@@ -14,6 +14,7 @@
     <script src="ace/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
 		<script src="ace/build/src/mode-html.js" type="text/javascript" charset="utf-8"></script>
     <script src="ace/build/src/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
+    <script src="ace/build/src/mode-python.js" type="text/javascript" charset="utf-8"></script>
 
 		<script>
 			$(function() {
@@ -46,6 +47,7 @@
     			var extensions = {
             'html': 'ace/mode/html',
             'js': 'ace/mode/javascript',
+            'py': 'ace/mode/python',
     			};
           if (extensions[extension]) {
   			    var mode = require(extensions[extension]).Mode;
@@ -80,6 +82,8 @@
         window.onbeforeunload = function() {
           return '';
         };
+        
+        initQuickOpen();
 			});
 		</script>
 	</head>
@@ -116,55 +120,57 @@
     </div>
     <script src="bootstrap-typeahead.js"></script>
     <script>
-      $.getJSON('/list?path=/Users/blake8086/Dropbox/edit', function(data) {
-        var files = data.files;
-        $('.quick-open input').typeahead({
-          source: files,
-          items: 10,
-          matcher: function(item) {
-            var itemArray = item.split('');
-            var queryArray = this.query.split('');
-            while (itemArray.length > 0) {
-              var itemCharacter = itemArray.shift();
-              if (queryArray[0] == itemCharacter) {
-                queryArray.shift();
-                if (queryArray.length == 0) {
-                  return true;
+      function initQuickOpen() {
+        $.getJSON('/list?path=/Users/blake8086/Dropbox/edit', function(data) {
+          var files = data.files;
+          $('.quick-open input').typeahead({
+            source: files,
+            items: 10,
+            matcher: function(item) {
+              var itemArray = item.split('');
+              var queryArray = this.query.split('');
+              while (itemArray.length > 0) {
+                var itemCharacter = itemArray.shift();
+                if (queryArray[0] == itemCharacter) {
+                  queryArray.shift();
+                  if (queryArray.length == 0) {
+                    return true;
+                  }
                 }
               }
-            }
-            return false;
-          },
-          sorter: function(items) {
-            //this.query
-            return items;
-          },
-          highlighter: function(item) {
-            var itemArray = item.split('');
-            var queryArray = this.query.split('');
-            var result = '';
-            while (itemArray.length > 0) {
-              var itemCharacter = itemArray.shift();
-              if (queryArray[0] == itemCharacter) {
-                result += '<b>' + queryArray[0] + '</b>';
-                queryArray.shift();
-                if (queryArray.length == 0) {
-                  result += itemArray.join('');
-                  break;
+              return false;
+            },
+            sorter: function(items) {
+              //this.query
+              return items;
+            },
+            highlighter: function(item) {
+              var itemArray = item.split('');
+              var queryArray = this.query.split('');
+              var result = '';
+              while (itemArray.length > 0) {
+                var itemCharacter = itemArray.shift();
+                if (queryArray[0] == itemCharacter) {
+                  result += '<b>' + queryArray[0] + '</b>';
+                  queryArray.shift();
+                  if (queryArray.length == 0) {
+                    result += itemArray.join('');
+                    break;
+                  }
+                } else {
+                  result += itemCharacter;
                 }
-              } else {
-                result += itemCharacter;
               }
+              return '<p>' + result + '</p>';
             }
-            return '<p>' + result + '</p>';
-          }
-        }).change(function(e) {
-          var filename = $(this).val();
-          if (files.indexOf(filename) != -1) {
-              window.open('/#' + filename);
-          }
+          }).change(function(e) {
+            var filename = $(this).val();
+            if (files.indexOf(filename) != -1) {
+                window.open('/#' + filename);
+            }
+          });
         });
-      });
+      }
     </script>
     <!-- end of quick open glob -->
         
