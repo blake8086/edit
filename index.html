@@ -65,21 +65,29 @@
             sender: 'editor'
           },
           exec: function(env, args, request) {
-            console.log('saving...');
             save();
           }
         });
 
 				function save() {
+          console.log('saving...');
           var fileContents = editor.getSession().getValue();
-					$.post('/save', {
-						fileName: encodeURIComponent(filename),
-						fileContents: fileContents,
-					}, function(data, status, xhr) {
-				    console.log('saved?');
-            saved = true;
-					});
-          document.title = filename.replace(/^.+\//, '');
+          $.ajax('/save', {
+            data: {
+    					fileName: encodeURIComponent(filename),
+	  					fileContents: fileContents,
+            },
+            error: function() {
+              alert('save failed');
+              saved = false;
+            },
+            success: function() {
+              console.log('save successful');
+              saved = true;
+              document.title = filename.replace(/^.+\//, '');
+            },
+            type: 'post',
+          });
 				}
                 
         window.onbeforeunload = function() {
