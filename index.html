@@ -125,6 +125,7 @@
         border: 1px solid #bbb;
         font-size: 16px;
         margin: 5px;
+        width: 800px;
       }
       ul.typeahead.dropdown-menu {
         background: #fff;
@@ -160,11 +161,14 @@
       function initQuickOpen() {
         $.getJSON('/list?path=' + settings.defaultPath, function(data) {
           var files = data.files;
+          var filenames = $.map(data.files, function(e, i) {
+            return {path: e.replace(/\/[^\/]+$/, '/'), filename: e.replace(/^.+\//, '')};
+          });
           $('.quick-open input').typeahead({
-            source: files,
+            source: filenames,
             items: 20,
             matcher: function(item) {
-              var itemArray = item.split('');
+              var itemArray = item.filename.split('');
               var queryArray = this.query.replace(/ /g, '').split('');
               while (itemArray.length > 0) {
                 var itemCharacter = itemArray.shift();
@@ -178,11 +182,10 @@
               return false;
             },
             sorter: function(items) {
-              //this.query
               return items;
             },
             highlighter: function(item) {
-              var itemArray = item.replace(/\//g, ' / ').split('');
+              var itemArray = item.filename.replace(/\//g, ' / ').split('');
               var queryArray = this.query.replace(/ /g, '').split('');
               var result = '';
               while (itemArray.length > 0) {
@@ -198,7 +201,7 @@
                   result += itemCharacter;
                 }
               }
-              return '<p>' + result + '</p>';
+              return '<p>' + item.path + result + '</p>';
             }
           }).change(function(e) {
             var filename = $(this).val();
