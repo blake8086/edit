@@ -25,26 +25,15 @@ http.createServer(function(request, response) {
 		//returns a file's entire contents
 		case 'file':
 			var filePath = querystring.parse(parsedUrl.query).path;
-			fs.open(filePath, 'r', 0666, function(err, fd) {
-				if (!err) {
-					response.writeHead(200, {'Content-Type': 'text/plain'});
-					var buffer = new Buffer(1024);
-					var sendChunk = function() {
-						fs.read(fd, buffer, 0, 1024, null, function(err, bytesRead) {
-							if (bytesRead == 1024) {
-								response.write(buffer.toString('binary'));
-								sendChunk();
-							} else {
-								response.write(buffer.toString('binary', 0, bytesRead));
-								response.end();
-							}
-						});
-					};
-					sendChunk();
-				} else {
-					console.log(err);
-				}
-			});
+      fs.readFile(filePath, 'utf8', function(err, data) {
+        if (!err) {
+          response.writeHead(200, {'Content-Type': 'text/plain'});
+          response.write(data);
+          response.end();
+        } else {
+          console.log(err);
+        }
+      });
 			break;
         /*
         //nothing is using this now, but it's a holdover from a different project
