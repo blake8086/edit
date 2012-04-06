@@ -162,7 +162,13 @@
         $.getJSON('/list?path=' + settings.defaultPath, function(data) {
           var files = data.files;
           var filenames = $.map(data.files, function(e, i) {
-            return {path: e.replace(/\/[^\/]+$/, '/'), filename: e.replace(/^.+\//, '')};
+            return {
+              filename: e.replace(/^.+\//, ''),
+              path: e.replace(/\/[^\/]+$/, '/'),
+              toString: function() {
+                return '' + this.path + this.filename;
+              }
+            };
           });
           $('.quick-open input').typeahead({
             source: filenames,
@@ -185,7 +191,7 @@
               return items;
             },
             highlighter: function(item) {
-              var itemArray = item.filename.replace(/\//g, ' / ').split('');
+              var itemArray = item.filename.split('');
               var queryArray = this.query.replace(/ /g, '').split('');
               var result = '';
               while (itemArray.length > 0) {
@@ -201,7 +207,7 @@
                   result += itemCharacter;
                 }
               }
-              return '<p>' + item.path + result + '</p>';
+              return '<p>' + item.path.replace(/\//g, ' / ') + result + '</p>';
             }
           }).change(function(e) {
             var filename = $(this).val();
