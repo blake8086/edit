@@ -14,7 +14,8 @@
 		<script src="json2.js"></script>
     <script src="crypto-sha1.js"></script>
     <script src="ace/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
-		<script src="ace/build/src/mode-html.js" type="text/javascript" charset="utf-8"></script>
+  	<script src="ace/build/src/mode-css.js" type="text/javascript" charset="utf-8"></script>
+  	<script src="ace/build/src/mode-html.js" type="text/javascript" charset="utf-8"></script>
     <script src="ace/build/src/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
     <script src="ace/build/src/mode-python.js" type="text/javascript" charset="utf-8"></script>
     <script src="settings.js"></script>
@@ -50,6 +51,7 @@
                     
           var extension = filename.replace(/^.+\./, '');
     			var extensions = {
+            'css': 'ace/mode/css',
             'html': 'ace/mode/html',
             'js': 'ace/mode/javascript',
             'py': 'ace/mode/python',
