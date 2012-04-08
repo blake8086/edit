@@ -1,6 +1,7 @@
 var fs = require('fs');
 var http = require('http');
 var querystring = require('querystring');
+var sha1 = require('sha1');
 
 Object.size = function(obj) {
     var size = 0, key;
@@ -9,6 +10,8 @@ Object.size = function(obj) {
     }
     return size;
 };
+
+var fileWatches = {};
 
 http.createServer(function(request, response) {
 	var parsedUrl = require('url').parse(request.url);
@@ -22,6 +25,43 @@ http.createServer(function(request, response) {
 				response.end();
 			});
 			break;
+    
+    case 'check':
+  		var filePath = querystring.parse(parsedUrl.query).path;
+      response.writeHead(200, {'Content-Type': 'text/plain'});
+      //look up the file
+      var status = fileWatches[filePath];
+      if (status) {
+        response.write(status.hash);
+      } else {
+        fs.readFile(filePath, 'utf8', (function(status) {
+          return function(err, data) {
+            if (!err) {
+              status = {};
+              status.hash = sha1(data);
+              status.watch = fs.watchFile(filePath, (function(filePath) {
+                return function(current, previous) {
+                  fs.readFile(filePath, 'utf8', (function(status) {
+                    return function(err, data) {
+                      if (!err) {
+                        status.hash = sha1(data);
+                      } else {
+                        status.hash = 'failed to read file';
+                      }
+                    };
+                  })(status));
+                };
+              })(filePath));
+              fileWatches[filePath] = status;
+              response.write(status.hash);
+            } else {
+              response.write('failed to read file');
+            }
+          };
+        })(status));
+      }
+      response.end();
+      break;
 
 		//returns a file's entire contents
 		case 'file':
@@ -109,6 +149,15 @@ http.createServer(function(request, response) {
 					var data = querystring.parse(rawFile);
 					var fileName = decodeURIComponent(data.fileName);
 					console.log(fileName);
+          //set the monitor to the new hash
+          var status = fileWatches[fileName];
+          if (status) {
+            status.hash = data.fileHash;
+          } else {
+            status = {
+              hash: data.fileHash,
+            }
+          }
 					var fileContents = data.fileContents;
 					fs.writeFile(fileName, fileContents, function(err) {
 						response.writeHead(200, {'Content-Type': 'text/plain'});

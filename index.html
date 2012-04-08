@@ -12,6 +12,7 @@
 		</style>
 		<script src="jquery.min.js"></script>
 		<script src="json2.js"></script>
+    <script src="crypto-sha1.js"></script>
     <script src="ace/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
 		<script src="ace/build/src/mode-html.js" type="text/javascript" charset="utf-8"></script>
     <script src="ace/build/src/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
@@ -38,6 +39,8 @@
 				
 				$.get('/file?path=' + filename, function(data) {
 					editor.getSession().setValue(data);
+          
+          window.filehash = Crypto.SHA1(data);
 
           editor.getSession().on('change', function(e) {
             console.log(e.data);
@@ -55,6 +58,22 @@
   			    var mode = require(extensions[extension]).Mode;
 				    editor.getSession().setMode(new mode());
           }
+          
+          //set up polling to check for modifications
+          setInterval(function() {
+            $.ajax('/check', {
+              data: {
+                path: filename,
+              },
+              error: function() {
+                console.log('check', 'error');
+              },
+              success: function(response) {
+                console.log('check', response);
+              },
+              type: 'get',
+            });
+          }, settings.pollingRate);
         });
 
         editor.commands.addCommand({
@@ -72,10 +91,12 @@
 				function save() {
           console.log('saving...');
           var fileContents = editor.getSession().getValue();
+          window.filehash = Crypto.SHA1(fileContents);
           $.ajax('/save', {
             data: {
+    					fileContents: fileContents,
     					fileName: encodeURIComponent(filename),
-	  					fileContents: fileContents,
+              fileHash: window.filehash,
             },
             error: function() {
               alert('save failed');
