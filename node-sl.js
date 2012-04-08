@@ -25,7 +25,7 @@ http.createServer(function(request, response) {
 				response.end();
 			});
 			break;
-    
+
     case 'check':
   		var filePath = querystring.parse(parsedUrl.query).path;
       response.writeHead(200, {'Content-Type': 'text/plain'});
@@ -33,6 +33,7 @@ http.createServer(function(request, response) {
       var status = fileWatches[filePath];
       if (status) {
         response.write(status.hash);
+        response.end();
       } else {
         fs.readFile(filePath, 'utf8', (function(status) {
           return function(err, data) {
@@ -54,13 +55,14 @@ http.createServer(function(request, response) {
               })(filePath));
               fileWatches[filePath] = status;
               response.write(status.hash);
+              response.end();
             } else {
               response.write('failed to read file');
+              response.end();
             }
           };
         })(status));
       }
-      response.end();
       break;
 
 		//returns a file's entire contents

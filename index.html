@@ -37,7 +37,7 @@
         }
 				window.location.hash = filename;
         document.title = filename.replace(/^.+\//, '');
-				
+
 				$.get('/file?path=' + filename, function(data) {
 					editor.getSession().setValue(data);
 
@@ -93,18 +93,21 @@
 				function save() {
           console.log('saving...');
           var fileContents = editor.getSession().getValue();
-          /*
           //this doesn't seem to work due to a bug in ace that causes the document
           //to not immediately return to the same cursor position after a setValue()
           //strip whitespace
-          fileContents = fileContents.replace(/ +\n/g, '\n');
-          //save cursor position
-          var cursor = editor.getSession().getSelection().getCursor();
-          //set edited file to stripped version
-          editor.getSession().setValue(fileContents);
-          //return cursor
-          editor.gotoLine(cursor.row + 1);
-          */
+          var strippedContents = fileContents.replace(/[\t ]+\n/g, '\n');
+
+          if (strippedContents != fileContents) {
+            //save cursor position
+            var cursor = editor.getSession().getSelection().getCursor();
+            //set edited file to stripped version
+            editor.getSession().setValue(strippedContents);
+            fileContents = strippedContents;
+            //return cursor
+            editor.gotoLine(cursor.row + 1, cursor.column + 1);
+          }
+
           window.filehash = Crypto.SHA1(fileContents);
           $.ajax('/save', {
             data: {
