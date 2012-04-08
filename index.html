@@ -71,7 +71,7 @@
                 console.log('check', 'error');
               },
               success: function(response) {
-                console.log('check', response);
+                console.log('local sha1', window.filehash, 'remote sha1', response);
               },
               type: 'get',
             });
