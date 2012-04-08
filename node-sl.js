@@ -1,4 +1,5 @@
 var fs = require('fs');
+var fsevents = require("fsevents");
 var http = require('http');
 var querystring = require('querystring');
 var sha1 = require('sha1');
@@ -40,8 +41,10 @@ http.createServer(function(request, response) {
             if (!err) {
               status = {};
               status.hash = sha1(data);
-              status.watch = fs.watchFile(filePath, (function(filePath) {
-                return function(current, previous) {
+              status.watch = new fsevents(filePath);
+              status.watch.on('change', (function(filePath) {
+                return function(filePath, flags, evtid) {
+                  console.log('fsevent:', filePath, flags, evtid);
                   fs.readFile(filePath, 'utf8', (function(status) {
                     return function(err, data) {
                       if (!err) {

@@ -165,6 +165,11 @@
         margin: 5px;
         width: 800px;
       }
+      .quick-open input.loading {
+        background-image: url(ajax-loader.gif);
+        background-repeat: no-repeat;
+        background-position: 99% 50%;
+      }
       ul.typeahead.dropdown-menu {
         background: #fff;
         border: 1px solid black;
@@ -191,7 +196,7 @@
       }
     </style>
     <div class="quick-open">
-      <input type="text">
+      <input type="text" class="loading">
       <div class="results"></div>
     </div>
     <script src="bootstrap-typeahead.js"></script>
@@ -253,6 +258,7 @@
                 window.open('/#' + filename);
             }
           });
+          $('.quick-open input').removeClass('loading');
         });
       }
     </script>
