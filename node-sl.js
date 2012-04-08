@@ -4,11 +4,11 @@ var querystring = require('querystring');
 var sha1 = require('sha1');
 
 Object.size = function(obj) {
-    var size = 0, key;
-    for (key in obj) {
-        if (obj.hasOwnProperty(key)) size++;
-    }
-    return size;
+  var size = 0, key;
+  for (key in obj) {
+    if (obj.hasOwnProperty(key)) size++;
+  }
+  return size;
 };
 
 var fileWatches = {};
@@ -84,47 +84,47 @@ http.createServer(function(request, response) {
       var fileObjects = [];
       
       var getDirectoryListing = function(path) {
-          filesRemaining[path] = 0;
-          //read all the files
-          fs.readdir(path, function(err, files) {
-              if (!err) {
-                  for (var i = 0; i < files.length; i++) {
-                      var name = files[i];
-                      var fullName = require('path').join(path, files[i]);
-                      getFileStats(fullName);
-                  }
-                  delete filesRemaining[path];
-              } else {
-                  console.log(err);
-                  delete filesRemaining[path];
-              }
-          });
+        filesRemaining[path] = 0;
+        //read all the files
+        fs.readdir(path, function(err, files) {
+          if (!err) {
+            for (var i = 0; i < files.length; i++) {
+              var name = files[i];
+              var fullName = require('path').join(path, files[i]);
+              getFileStats(fullName);
+            }
+            delete filesRemaining[path];
+          } else {
+            console.log(err);
+            delete filesRemaining[path];
+          }
+        });
       };
             
       var getFileStats = function(path) {
-          //don't try to walk hidden files or directories
-          if (!path.match(/\/\./)) {
-              //put this file in files remaining
-              filesRemaining[path] = 0;
-              //read stats, place in file objects
-      	fs.stat(path, function(err, stats) {
-                  if (!err) {
+        //don't try to walk hidden files or directories
+        if (!path.match(/\/\./)) {
+          //put this file in files remaining
+          filesRemaining[path] = 0;
+          //read stats, place in file objects
+        	fs.stat(path, function(err, stats) {
+            if (!err) {
       				fileObjects.push(path);
-                      if (stats.isDirectory()) {
-                          getDirectoryListing(path);
-                      } else {
-                          delete filesRemaining[path];
-                      }
-                      
-                      if (Object.size(filesRemaining) == 0) {
-                          serialize();
-                      }
-                  } else {
-                      console.log(err);
-                      delete filesRemaining[path];
-                  }
-              });
-          }
+              if (stats.isDirectory()) {
+                getDirectoryListing(path);
+              } else {
+                delete filesRemaining[path];
+              }
+
+              if (Object.size(filesRemaining) == 0) {
+                serialize();
+              }
+            } else {
+              console.log(err);
+              delete filesRemaining[path];
+            }
+          });
+        }
       };
 
       var serialize = function() {
@@ -137,8 +137,10 @@ http.createServer(function(request, response) {
       getDirectoryListing(filePath);
 
       break;
+
 		case 'favicon.ico':
 			break;
+
 		case 'save':
 			//get filename
 			var fileSize = request.headers['content-length'];
@@ -167,6 +169,7 @@ http.createServer(function(request, response) {
 				}
 			});
 			break;
+
 		default:
 			fs.readFile(page, function(err, data) {
 				response.writeHead(200, {'Content-Type': 'text/javascript'});
