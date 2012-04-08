@@ -84,7 +84,7 @@ http.createServer(function(request, response) {
       var filePath = querystring.parse(parsedUrl.query).path;
       var filesRemaining = {};
       var fileObjects = [];
-      
+
       var getDirectoryListing = function(path) {
         filesRemaining[path] = 0;
         //read all the files
@@ -102,7 +102,7 @@ http.createServer(function(request, response) {
           }
         });
       };
-            
+
       var getFileStats = function(path) {
         //don't try to walk hidden files or directories
         if (!path.match(/\/\./)) {
@@ -135,7 +135,7 @@ http.createServer(function(request, response) {
         response.write(JSON.stringify(result));
         response.end();
       };
-        
+
       getDirectoryListing(filePath);
 
       break;
